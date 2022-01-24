@@ -4,16 +4,14 @@ import os
 import random
 import warnings
 from dataclasses import asdict
-from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
 import torch
 from tensorboardX import SummaryWriter
-from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm.auto import tqdm, trange
-from transformers import BartTokenizer
-from transformers.models.t5 import T5Config, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5Config, T5ForConditionalGeneration
 from transformers.optimization import (
     get_constant_schedule,
     get_constant_schedule_with_warmup,
@@ -114,11 +112,11 @@ class T5Model:
             self.config = config_class.from_pretrained(model_name, **self.args.config)
             self.model = model_class.from_pretrained(model_name, config=self.config)
 
-        if isinstance(tokenizer, BartTokenizer):
+        if isinstance(tokenizer, T5Tokenizer):
             self.tokenizer = tokenizer
             self.model.resize_token_embeddings(len(self.tokenizer))
         else:
-            self.tokenizer = BartTokenizer.from_pretrained(model_name, truncate=True)
+            self.tokenizer = T5Tokenizer.from_pretrained(model_name, truncate=True)
 
         if self.args.dynamic_quantize:
             self.model = torch.quantization.quantize_dynamic(
